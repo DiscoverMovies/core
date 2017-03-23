@@ -57,7 +57,7 @@ class User(db.Model):
 
 class Profile(db.Model):
     __tablename__ = 'Profile'
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), primary_key=True)
+    username = db.Column(db.String(100), db.ForeignKey('User.username'), primary_key=True)
     #user = db.relationship('User', foreign_keys='Profile.user_id')
     name = db.Column(db.String(500), nullable=False)
     country = db.Column(db.String(2), nullable=True)
@@ -66,9 +66,10 @@ class Profile(db.Model):
     sex = db.Column(db.String(1), nullable=True)
     complete = db.Column(db.Boolean, default=False)
 
-    def __init__(self, user_id, name):
-        self.user_id = user_id
-        self.name = name
+    def __init__(self, username):
+        self.username = username
+        self.name = ''
+
 
     def __str__(self):
         return self.name
@@ -79,29 +80,18 @@ class ForumTopic(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.Text, nullable=False)
     body = db.Column(db.Text, nullable=False)
-    author_id = db.Column(db.Integer,db.ForeignKey('User.id'))
-    #author = db.relationship('User', foreign_keys='ForumTopic.author_id')
+    author_username = db.Column(db.String(100), db.ForeignKey('User.username'), primary_key=True)
 
 class ForumReply(db.Model):
     __tablename__ = 'ForumReply'
     id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     topic_id = db.Column(db.Integer, db.ForeignKey('ForumTopic.id'))
     text = db.Column(db.Text,nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('User.id'))
-    #author = db.relationship('User', foreign_keys='ForumTopic.author_id')
+    author_username = db.Column(db.String(100), db.ForeignKey('User.username'), primary_key=True)
 
 class Recommendations(db.Model):
     __tablename__ = 'Recommendation'
     id = db.Column(db.Integer, autoincrement=True,primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    username = db.Column(db.String(100), db.ForeignKey('User.username'), primary_key=True)
     movie_id = db.Column(db.Integer)
     level = db.Column(db.Integer,default=0)
-
-
-access_token = db.Table(
-    'access_token',
-    db.metadata,
-    db.Column('username', db.Integer(),db.ForeignKey('User.username'), primary_key=True),
-    db.Column('token', db.String(50), nullable=False),
-    db.Column('create_time', db.DATETIME, nullable=False)
-)

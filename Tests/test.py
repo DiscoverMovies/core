@@ -25,3 +25,18 @@ def test_user_check(username):
 def test_user_search(username):
     r=requests.get(base_url+'/user/search',params={'username':username})
     return r.text
+
+def test_user_data(token):
+    r=requests.get(base_url+'/user/data',params={'token':token})
+    return r.text
+
+def test_user_update(token,data):
+    r=requests.post(base_url+'/user/update',data={
+        'token':data['token'],
+        'name': data['name'],
+        'dob': data['dob'],
+        'sex': data['sex'],
+        'country': data['country'],
+        'state': data['state'],
+    })
+    return r.text

@@ -17,3 +17,19 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from discovermovies import app
+
+
+def check_token(token):
+    s = Serializer('1234abcd')
+    try:
+        data = s.loads(token)
+    except SignatureExpired:
+        return None  # valid token, but expired
+    except BadSignature:
+        raise None  # invalid token
+    return data['username']
