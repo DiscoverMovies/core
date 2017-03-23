@@ -17,22 +17,3 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
-
-
-app = Flask(__name__)
-app.config.from_object('config')
-
-db = SQLAlchemy(app=app)
-
-@app.errorhandler(404)
-def not_found():
-    return jsonify(status='error',reason='resource not found')
-
-from discovermovies.core import core
-
-app.register_blueprint(core)
-
-db.create_all()
-
