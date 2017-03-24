@@ -9,7 +9,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Define the database - we are working with
 # SQLite for this example
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@localhost/dm'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@localhost/discovermovie'
 DATABASE_CONNECT_OPTIONS = {}
 
 # Application threads. A common general assumption is
@@ -23,7 +23,7 @@ CSRF_ENABLED = True
 
 # Use a secure, unique and absolutely secret key for
 # signing the data.
-CSRF_SESSION_KEY = "secret"
+CSRF_SESSION_KEY = "1234abcd"
 
 # Secret key for signing cookies
 secret = "1234abcd"
