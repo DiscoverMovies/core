@@ -16,28 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
+from flask import Blueprint, jsonify
 
-from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from discovermovies.mod_movie.models import Movie
 
-app = Flask(__name__)
-app.config.from_object('config')
-#mail_sender.mail.init_app(app)
+mod_movie = Blueprint('movie',__name__)
 
-db = SQLAlchemy(app=app)
-
-
-@app.errorhandler(404)
-def not_found(status):
-    return jsonify(status='error', reason='resource not found', information=str(status))
-
-
-from discovermovies.core import core
-from discovermovies.mod_forums import forums
-from discovermovies.mod_movie import mod_movie
-
-app.register_blueprint(core)
-app.register_blueprint(forums)
-app.register_blueprint(mod_movie)
-
-db.create_all()
+@mod_movie.route('/movie/get/<int:movie_id>')
+def get_movie(movie_id):
+    movie = Movie.query.get(id=movie_id)
+    return jsonify(status='OK')
