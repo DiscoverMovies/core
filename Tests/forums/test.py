@@ -10,6 +10,10 @@ def test_get_forum(forum_id):
     r=requests.get(base_url+'/forum/get/'+str(forum_id))
     return r.text
 
+def test_search_forum(text):
+    r=requests.get(base_url+'/forum/search', params={'q':text})
+    return r.text
+
 def test_get_replies(forum_id):
     r = requests.get(base_url+'/forum/reply/get/'+str(forum_id))
     return r.text

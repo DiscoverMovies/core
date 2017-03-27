@@ -30,11 +30,10 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from discovermovies import db, app
-from discovermovies.core.models import  User, Profile
+from discovermovies.core.models import User, Profile
 from discovermovies.utlils import check_token, get_error_json, send_async
 
 core = Blueprint("core", __name__)
-
 
 
 @core.route('/user/auth', methods=['POST'])
@@ -49,9 +48,10 @@ def authenticate_user():
         return get_error_json('Wrong password', 'incorrect_password')
     if check_password_hash(user.password, password):
         token = str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'username': user.username}))
-        return jsonify(status='OK',token=token)
+        return jsonify(status='OK', token=token)
     else:
         return get_error_json('Wrong password', 'incorrect_password')
+
 
 @core.route('/user/create', methods=['POST'])
 def create_user():
@@ -63,34 +63,38 @@ def create_user():
     except KeyError:
         return get_error_json('Missing data', 'missing_data')
     if User.query.filter_by(username=username).first() is not None:
-        return jsonify(status='error',reason='duplicate username', code='duplicate_username')
-    user = User(username,generate_password_hash(password),email,phone)
+        return jsonify(status='error', reason='duplicate username', code='duplicate_username')
+    user = User(username, generate_password_hash(password), email, phone)
     profile = Profile(username)
     db.session.add(user)
     db.session.commit()
     db.session.add(profile)
     db.session.commit()
-    return jsonify(status='OK',token=str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'id': user.username})))
+    return jsonify(status='OK',
+                   token=str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'id': user.username})))
 
-@core.route('/user/check',methods=['GET'])
+
+@core.route('/user/check', methods=['GET'])
 def check_user_exist():
     try:
         username = request.args['username']
     except KeyError:
         return get_error_json('Missing data', 'missing_data')
     if User.query.filter_by(username=username).first() is not None:
-        return jsonify(status='OK',exists=True)
+        return jsonify(status='OK', exists=True)
     return jsonify(status='OK', exists=False)
 
-@core.route('/user/search',methods=['GET'])
+
+@core.route('/user/search', methods=['GET'])
 def search_user():
     try:
         username = request.args['username']
     except KeyError:
         return get_error_json('Missing data', 'missing_data')
-    userlist = User.query.filter(User.username.like('%'+username+'%')).all()
+    userlist = User.query.filter(User.username.like('%' + username + '%')).all()
     print()
     return jsonify(userlist=[i.serialize for i in userlist])
+
 
 @core.route('/user/data', methods=['GET'])
 def get_user_data():
@@ -98,20 +102,20 @@ def get_user_data():
         username = check_token(request.args['token'])
         print(dict(request.args))
         if username is None:
-            return jsonify(status='error',reason='invalid token',code='invalid_token')
+            return jsonify(status='error', reason='invalid token', code='invalid_token')
     except KeyError:
         return get_error_json('Missing data', 'missing_data')
     user = User.query.filter_by(username=username).first()
     profile = Profile.query.filter_by(username=username).first()
     data = {
-        'username':user.username,
+        'username': user.username,
         'email': user.email,
         'phone': user.phone,
         'verified': user.verified,
-        'name':profile.name,
+        'name': profile.name,
         'sex': profile.sex,
         'dob': profile.date_of_birth,
-        'country':profile.country,
+        'country': profile.country,
         'state': profile.state,
         'complete': profile.complete
     }
@@ -123,7 +127,7 @@ def update_user_data():
     try:
         username = check_token(request.form['token'])
         if username is None:
-            return jsonify(status='error',reason='invalid token',code='invalid_token')
+            return jsonify(status='error', reason='invalid token', code='invalid_token')
     except KeyError:
         return get_error_json('Missing data', 'missing_data')
     user = User.query.filter_by(username=username).first()
@@ -131,7 +135,7 @@ def update_user_data():
     try:
         profile.name = request.form['name']
         profile.sex = request.form['sex']
-        profile.date_of_birth = datetime.datetime.strptime(request.form['dob'],'%Y-%m-%d').date()
+        profile.date_of_birth = datetime.datetime.strptime(request.form['dob'], '%Y-%m-%d').date()
         profile.country = request.form['country']
         profile.state = request.form['state']
     except KeyError:
@@ -154,14 +158,15 @@ def verify_user():
     db.session.commit()
     return jsonify(status='OK', username=username)
 
+
 @core.route('/user/send_verification/<username>')
 def send_verification_link(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
         return get_error_json('Unknown user', 'unknown_user')
     s = Serializer(app.config['SECRET_KEY'])
-    code = s.dumps({'username':username})
+    code = s.dumps({'username': username})
     email_id = user.email
-    #TODO
+    # TODO
     send_async('me@sidhin.in', 'Testing flask_mail', 'verification.html', name='Sidhin', link='hello.com')
     return jsonify(status='OK')
