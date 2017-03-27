@@ -1,8 +1,8 @@
-#DiscoverMovies API documentation
+# DiscoverMovies API documentation
 
 The api is divided into segments that interact with specific models
 
-###Core
+### Core
 
 Core handles and interacts with users and sessions. It handles:
 
@@ -20,7 +20,7 @@ Core handles and interacts with users and sessions. It handles:
     ```
         POST /user/update
         {token,name,sex,dob,country,state}
-    ```
+    ```````
 *   Check user exists
     ```
         GET /user/check
@@ -73,3 +73,4 @@ Core handles and interacts with users and sessions. It handles:
         POST /forum/reply/post/<forum_id>
         {token, text}
     ```
+    
