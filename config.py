@@ -1,5 +1,7 @@
 import os
 
+SITE_NAME = 'discovermovies.ml'
+
 # Statement for enabling the development environment
 DEBUG = True
 
@@ -26,4 +28,7 @@ CSRF_ENABLED = True
 CSRF_SESSION_KEY = "1234abcd"
 
 # Secret key for signing cookies
-secret = "1234abcd"
+SECRET_KEY = "1234abcd"
+
+
+ROBOT_EMAIL = 'noreply@discovermovies.ml'

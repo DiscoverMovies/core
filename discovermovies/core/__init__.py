@@ -17,18 +17,24 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 import datetime
+import threading
 
 from flask import Blueprint, jsonify
+from flask import copy_current_request_context
+from flask import current_app
+from flask import render_template
 from flask import request
+from flask_mail import Mail, Message
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from discovermovies import db, app
 from discovermovies.core.models import  User, Profile
-from discovermovies.utlils import check_token
+from discovermovies.utlils import check_token, get_error_json, send_async
 
 core = Blueprint("core", __name__)
+
 
 
 @core.route('/user/auth', methods=['POST'])
@@ -37,15 +43,15 @@ def authenticate_user():
         username = request.form['username']
         password = request.form['password']
     except KeyError:
-        return jsonify(status='error', reason='missing data', code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     user = User.query.filter_by(username=username).first()
     if user is None:
-        return jsonify(status='error', reason='incorrect username', code='incorrect_username')
+        return get_error_json('Wrong password', 'incorrect_password')
     if check_password_hash(user.password, password):
-        token = str(Serializer('1234abcd', expires_in=6000).dumps({'username': user.username}))
+        token = str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'username': user.username}))
         return jsonify(status='OK',token=token)
     else:
-        return jsonify(status='error', reason='incorrect password', code='incorrect_password')
+        return get_error_json('Wrong password', 'incorrect_password')
 
 @core.route('/user/create', methods=['POST'])
 def create_user():
@@ -55,22 +61,23 @@ def create_user():
         email = request.form['email']
         phone = request.form['phone']
     except KeyError:
-        return jsonify(status='error',reason='missing data',code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     if User.query.filter_by(username=username).first() is not None:
         return jsonify(status='error',reason='duplicate username', code='duplicate_username')
     user = User(username,generate_password_hash(password),email,phone)
     profile = Profile(username)
     db.session.add(user)
+    db.session.commit()
     db.session.add(profile)
     db.session.commit()
-    return jsonify(status='OK',token=str(Serializer('12345abcd', expires_in=6000).dumps({'id': user.username})))
+    return jsonify(status='OK',token=str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'id': user.username})))
 
 @core.route('/user/check',methods=['GET'])
 def check_user_exist():
     try:
         username = request.args['username']
     except KeyError:
-        return jsonify(status='error', reason='missing data', code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     if User.query.filter_by(username=username).first() is not None:
         return jsonify(status='OK',exists=True)
     return jsonify(status='OK', exists=False)
@@ -80,8 +87,9 @@ def search_user():
     try:
         username = request.args['username']
     except KeyError:
-        return jsonify(status='error', reason='missing data', code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     userlist = User.query.filter(User.username.like('%'+username+'%')).all()
+    print()
     return jsonify(userlist=[i.serialize for i in userlist])
 
 @core.route('/user/data', methods=['GET'])
@@ -92,7 +100,7 @@ def get_user_data():
         if username is None:
             return jsonify(status='error',reason='invalid token',code='invalid_token')
     except KeyError:
-        return jsonify(status='error',reason='missing token',code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     user = User.query.filter_by(username=username).first()
     profile = Profile.query.filter_by(username=username).first()
     data = {
@@ -113,12 +121,11 @@ def get_user_data():
 @core.route('/user/update', methods=['POST'])
 def update_user_data():
     try:
-        print(dict(request.form))
         username = check_token(request.form['token'])
         if username is None:
             return jsonify(status='error',reason='invalid token',code='invalid_token')
     except KeyError:
-        return jsonify(status='error',reason='missing token',code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     user = User.query.filter_by(username=username).first()
     profile = Profile.query.filter_by(username=username).first()
     try:
@@ -128,8 +135,33 @@ def update_user_data():
         profile.country = request.form['country']
         profile.state = request.form['state']
     except KeyError:
-        return jsonify(status='error',reason='missing data',code='missing_data')
+        return get_error_json('Missing data', 'missing_data')
     profile.complete = True
     db.session.commit()
     return jsonify(status='OK')
 
+
+@core.route('/user/verify')
+def verify_user():
+    try:
+        code = request.args['code']
+    except KeyError:
+        return get_error_json('Missing data', 'missing_data')
+    s = Serializer(app.config['SECRET_KEY'], expires_in=0)
+    username = s.loads(code)['username']
+    user = User.query.filter_by(username=username).first()
+    user.verified = True
+    db.session.commit()
+    return jsonify(status='OK', username=username)
+
+@core.route('/user/send_verification/<username>')
+def send_verification_link(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return get_error_json('Unknown user', 'unknown_user')
+    s = Serializer(app.config['SECRET_KEY'])
+    code = s.dumps({'username':username})
+    email_id = user.email
+    #TODO
+    send_async('me@sidhin.in', 'Testing flask_mail', 'verification.html', name='Sidhin', link='hello.com')
+    return jsonify(status='OK')

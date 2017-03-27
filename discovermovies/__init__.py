@@ -20,19 +20,22 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
-
 app = Flask(__name__)
 app.config.from_object('config')
+#mail_sender.mail.init_app(app)
 
 db = SQLAlchemy(app=app)
 
+
 @app.errorhandler(404)
-def not_found():
-    return jsonify(status='error',reason='resource not found')
+def not_found(status):
+    return jsonify(status='error', reason='resource not found', information=str(status))
+
 
 from discovermovies.core import core
+from discovermovies.mod_forums import forums
 
 app.register_blueprint(core)
+app.register_blueprint(forums)
 
 db.create_all()
-
