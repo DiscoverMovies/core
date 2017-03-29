@@ -17,12 +17,27 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 from flask import Blueprint, jsonify
+from flask import abort
+from flask import request
 
-from discovermovies.mod_movie.models import Movie
+from discovermovies import db
+from discovermovies.mod_movie.models import Movie, MovieGenre
 
 mod_movie = Blueprint('movie',__name__)
 
 @mod_movie.route('/movie/get/<int:movie_id>')
 def get_movie(movie_id):
-    movie = Movie.query.get(id=movie_id)
-    return jsonify(status='OK')
+    movie = db.session.query(Movie).filter_by(id=movie_id).first()
+    if movie is None:
+        abort(404)
+    return jsonify(status='OK', movie=movie.serialize)
+
+@mod_movie.route('/movie/search', methods=['GET'])
+def search_movie():
+    q = request.args.get('q','')
+    movie_list = db.session.query(Movie).filter(Movie.title.ilike("%"+q+"%")).order_by(Movie.vote_count.desc()).limit(10).all()
+    return jsonify(status='OK', movie_list=[i.serialize for i in movie_list])
+
+@mod_movie.route('/movie/popular/<int:genre_id>')
+def get_popular_genre_movie(genre_id):
+    movie_list = db.session.query(MovieGenre)

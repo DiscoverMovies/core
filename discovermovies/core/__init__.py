@@ -48,7 +48,7 @@ def authenticate_user():
         return get_error_json('Wrong password', 'incorrect_password')
     if check_password_hash(user.password, password):
         token = str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'username': user.username}))
-        return jsonify(status='OK', token=token)
+        return jsonify(status='OK', token=token.replace("b'","").replace("'",""))
     else:
         return get_error_json('Wrong password', 'incorrect_password')
 
@@ -71,7 +71,8 @@ def create_user():
     db.session.add(profile)
     db.session.commit()
     return jsonify(status='OK',
-                   token=str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'id': user.username})))
+                   token=str(Serializer(app.config['SECRET_KEY'], expires_in=6000).dumps({'id': user.username}))
+                   .replace("b'","").replace("'",""))
 
 
 @core.route('/user/check', methods=['GET'])

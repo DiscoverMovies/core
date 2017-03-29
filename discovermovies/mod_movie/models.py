@@ -30,21 +30,29 @@ class Movie(Base):
 
     @property
     def serialize(self):
+        actor_id_list = db.session.query(AppearsOn).filter(AppearsOn.mid==self.id).all()
+        actor_list = db.session.query(Actors).filter(Actors.id.in_([i.aid for i in actor_id_list])).all()
+        id_list = db.session.query(MovieGenre).filter(MovieGenre.mid==self.id).all()
+        genre_list = db.session.query(Genre).filter(Genre.id.in_([i.gid for i in id_list])).all()
+        collections_list = db.session.query(Collections).filter(Collections.id==self.collection_id).all()
+
         return {
             'id': self.id,
             'imdb': self.imdbid,
-            'collections_id': self.collection_id,
+            'collections': [i.serialize for i in collections_list],
             'language': self.language,
             'original_title': self.original_title,
             'overview': self.overview,
-            'popularity': self.popularity,
+            'popularity': str(self.popularity),
             'poster_url': self.poster_url,
             'release_date': self.release_date,
             'runtime': self.runtime,
             'tagline': self.tagline,
             'title': self.title,
-            'vote_avg': self.vote_avg,
-            'vote_count': self.vote_count
+            'vote_avg': str(self.vote_avg),
+            'vote_count': self.vote_count,
+            'actor_list': [i.serialize for i in actor_list],
+            'genre': [i.serialize for i in genre_list]
         }
 
 
