@@ -21,9 +21,10 @@ from flask import abort
 from flask import request
 
 from discovermovies import db
-from discovermovies.mod_movie.models import Movie, MovieGenre
+from discovermovies.mod_movie.models import Movie, MovieGenre, Genre
 
-mod_movie = Blueprint('movie',__name__)
+mod_movie = Blueprint('movie', __name__)
+
 
 @mod_movie.route('/movie/get/<int:movie_id>')
 def get_movie(movie_id):
@@ -32,13 +33,25 @@ def get_movie(movie_id):
         abort(404)
     return jsonify(status='OK', movie=movie.serialize)
 
+
 @mod_movie.route('/movie/search', methods=['GET'])
 def search_movie():
-    q = request.args.get('q','')
-    limit = int(request.args.get('limit','10'))
-    movie_list = db.session.query(Movie).filter(Movie.title.ilike("%"+q+"%")).order_by(Movie.vote_count.desc()).limit(limit).all()
+    q = request.args.get('q', '')
+    limit = int(request.args.get('limit', '10'))
+    movie_list = db.session.query(Movie).filter(Movie.title.ilike("%" + q + "%")).order_by(
+        Movie.vote_count.desc()).limit(limit).all()
     return jsonify(status='OK', movie_list=[i.serialize for i in movie_list])
+
 
 @mod_movie.route('/movie/popular/<int:genre_id>')
 def get_popular_genre_movie(genre_id):
-    movie_list = db.session.query(MovieGenre)
+    limit = int(request.args.get('limit','10'))
+    movie_id_list = db.session.query(MovieGenre).filter(MovieGenre.gid == genre_id)
+    movie_list = db.session.query(Movie).filter(Movie.id.in_([i.mid for i in movie_id_list])).order_by(
+        Movie.vote_count.desc()).limit(limit)
+    return jsonify(status='OK', movie_list=[i.serialize for i in movie_list])
+
+@mod_movie.route('/movie/genre/all')
+def get_genre_list():
+    q = db.session.query(Genre).all()
+    return jsonify(status='OK', movie_list=[i.serialize for i in q])

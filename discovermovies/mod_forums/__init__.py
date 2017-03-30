@@ -35,11 +35,12 @@ def search_forum():
     try:
         string = request.args['q']
     except KeyError:
-        return get_error_json('No query specified','missing_data')
+        return get_error_json('No query specified', 'missing_data')
     forum_list = ForumTopic.query.filter(or_(
-        ForumTopic.title.ilike("%"+string+'%'),ForumTopic.body.ilike('%'+string+'%'))
+        ForumTopic.title.ilike("%" + string + '%'), ForumTopic.body.ilike('%' + string + '%'))
     )
-    return jsonify(status='OK',forums=[i.serialize for i in forum_list])
+    return jsonify(status='OK', forums=[i.serialize for i in forum_list])
+
 
 # Data used -> None
 @mod_forums.route('/forum/get/<int:forum_id>')
@@ -49,6 +50,7 @@ def get_forum(forum_id):
         return get_error_json('Forum topic does not exist', 'unknown_resource')
     return jsonify(status='OK', forum=forum.serialize)
 
+
 # Data used -> None
 @mod_forums.route('/forum/all')
 def get_all_forum():
@@ -57,6 +59,7 @@ def get_all_forum():
         return get_error_json('Forum topic does not exist', 'unknown_resource')
     return jsonify(status='OK', forum=[i.serialize for i in forum_list])
 
+
 # Data used -> None
 @mod_forums.route('/forum/replies/get/<int:forum_id>')
 def get_all_replies(forum_id):
@@ -64,6 +67,7 @@ def get_all_replies(forum_id):
     if replies is None:
         return jsonify(status='OK', replies='None')
     return jsonify(status='OK', replies=[i.serialize for i in replies])
+
 
 # Data used -> token, title, text
 @mod_forums.route('/forum/create', methods=['POST'])
@@ -87,6 +91,7 @@ def create_forum():
     db.session.commit()
     return jsonify(status='OK')
 
+
 # Data used -> token
 @mod_forums.route('/forum/delete/<int:forum_id>', methods=['POST'])
 def delete_forum(forum_id):
@@ -105,6 +110,7 @@ def delete_forum(forum_id):
     db.session.delete(forum)
     db.session.commit()
     return jsonify(status='OK')
+
 
 # Data used -> token,title,text
 @mod_forums.route('/forum/update/<int:forum_id>', methods=['POST'])
@@ -152,4 +158,3 @@ def post_reply(forum_id):
     db.session.add(reply)
     db.session.commit()
     return jsonify(status='OK')
-
