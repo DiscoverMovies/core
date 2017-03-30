@@ -26,11 +26,11 @@ from discovermovies.core.models import User
 from discovermovies.mod_forums.models import ForumTopic, ForumReply
 from discovermovies.utlils import get_error_json, check_token
 
-forums = Blueprint('forums', __name__)
+mod_forums = Blueprint('forums', __name__)
 
 
 # Data used -> q
-@forums.route('/forum/search', methods=['GET'])
+@mod_forums.route('/forum/search', methods=['GET'])
 def search_forum():
     try:
         string = request.args['q']
@@ -42,7 +42,7 @@ def search_forum():
     return jsonify(status='OK',forums=[i.serialize for i in forum_list])
 
 # Data used -> None
-@forums.route('/forum/get/<int:forum_id>')
+@mod_forums.route('/forum/get/<int:forum_id>')
 def get_forum(forum_id):
     forum = ForumTopic.query.filter_by(id=forum_id).first()
     if forum is None:
@@ -50,7 +50,7 @@ def get_forum(forum_id):
     return jsonify(status='OK', forum=forum.serialize)
 
 # Data used -> None
-@forums.route('/forum/all')
+@mod_forums.route('/forum/all')
 def get_all_forum():
     forum_list = ForumTopic.query.all()
     if forum_list is None:
@@ -58,7 +58,7 @@ def get_all_forum():
     return jsonify(status='OK', forum=[i.serialize for i in forum_list])
 
 # Data used -> None
-@forums.route('/forum/replies/get/<int:forum_id>')
+@mod_forums.route('/forum/replies/get/<int:forum_id>')
 def get_all_replies(forum_id):
     replies = ForumReply.query.filter_by(topic_id=forum_id).all()
     if replies is None:
@@ -66,7 +66,7 @@ def get_all_replies(forum_id):
     return jsonify(status='OK', replies=[i.serialize for i in replies])
 
 # Data used -> token, title, text
-@forums.route('/forum/create', methods=['POST'])
+@mod_forums.route('/forum/create', methods=['POST'])
 def create_forum():
     try:
         username = check_token(request.form['token'])
@@ -88,7 +88,7 @@ def create_forum():
     return jsonify(status='OK')
 
 # Data used -> token
-@forums.route('/forum/delete/<int:forum_id>', methods=['POST'])
+@mod_forums.route('/forum/delete/<int:forum_id>', methods=['POST'])
 def delete_forum(forum_id):
     try:
         username = check_token(request.form['token'])
@@ -106,8 +106,34 @@ def delete_forum(forum_id):
     db.session.commit()
     return jsonify(status='OK')
 
+# Data used -> token,title,text
+@mod_forums.route('/forum/update/<int:forum_id>', methods=['POST'])
+def update_forum(forum_id):
+    try:
+        username = check_token(request.form['token'])
+        if username is None:
+            return get_error_json('Invalid token', 'invalid_token')
+    except KeyError:
+        return get_error_json('Missing token', 'missing_data')
+
+    forum = ForumTopic.query.filter_by(id=forum_id).first()
+    if forum is None:
+        return get_error_json('No topic corresponding to id', 'unknown_resource')
+    if forum.author_username != username:
+        return get_error_json('Not authorized', 'unauthorized')
+    try:
+        title = request.form['title']
+        text = request.form['text']
+    except KeyError:
+        return get_error_json('Missing data', 'missing_data')
+    forum.title = title
+    forum.body = text
+    db.session.commit()
+    return jsonify(status='OK')
+
+
 # Data used -> token, text
-@forums.route('/forum/reply/post/<int:forum_id>', methods=['POST'])
+@mod_forums.route('/forum/reply/post/<int:forum_id>', methods=['POST'])
 def post_reply(forum_id):
     forum = ForumTopic.query.filter_by(id=forum_id).first()
     if forum is None:

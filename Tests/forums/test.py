@@ -30,3 +30,7 @@ def test_create_reply(forum_id,text,token):
 def test_delete_forum(forum_id,token):
     r = requests.post(base_url+'/forum/delete/'+str(forum_id), data={'token':token})
     return r.text
+
+def test_update_forum(forum_id,token,title,text):
+    r = requests.post(base_url+'/forum/update/'+str(forum_id), data={'token':token,'title':title,'text':text})
+    return r.text

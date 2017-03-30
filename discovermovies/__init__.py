@@ -33,11 +33,11 @@ def not_found(status):
 
 
 from discovermovies.core import core
-from discovermovies.mod_forums import forums
+from discovermovies.mod_forums import mod_forums
 from discovermovies.mod_movie import mod_movie
 
 app.register_blueprint(core)
-app.register_blueprint(forums)
+app.register_blueprint(mod_forums)
 app.register_blueprint(mod_movie)
 
 db.create_all()
