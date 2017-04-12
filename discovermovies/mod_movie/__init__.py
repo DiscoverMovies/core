@@ -45,11 +45,12 @@ def search_movie():
 
 @mod_movie.route('/movie/popular/<int:genre_id>')
 def get_popular_genre_movie(genre_id):
-    limit = int(request.args.get('limit','10'))
+    limit = int(request.args.get('limit', '10'))
     movie_id_list = db.session.query(MovieGenre).filter(MovieGenre.gid == genre_id)
     movie_list = db.session.query(Movie).filter(Movie.id.in_([i.mid for i in movie_id_list])).order_by(
         Movie.vote_count.desc()).limit(limit)
     return jsonify(status='OK', movie_list=[i.serialize for i in movie_list])
+
 
 @mod_movie.route('/movie/genre/all')
 def get_genre_list():

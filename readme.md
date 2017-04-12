@@ -73,4 +73,27 @@ Core handles and interacts with users and sessions. It handles:
         POST /forum/reply/post/<forum_id>
         {token, text}
     ```
-    
+
+### Movies
+
+*   Get movie details
+    ```
+        HTML /movie/get/<movie_id>
+    ```
+
+*   Search movie data
+    ```
+        GET /movie/search
+        {q}
+    ```
+
+*   Get popular movies of a genre
+    ```
+        HTML /movie/popular/<genre_id>
+    ```
+
+*   Get details of all genre
+    ```
+        HTML /movie/genre/all
+    ```
+ 
