@@ -31,4 +31,6 @@ CSRF_SESSION_KEY = "1234abcd"
 SECRET_KEY = "1234abcd"
 
 
-ROBOT_EMAIL = 'noreply@discovermovies.ml'
+ROBOT_EMAIL = 'admin@trymake.com'
+EMAIL_USER = 'admin@trymake.com'
+EMAIL_PASS = 'mynewpassword'

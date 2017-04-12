@@ -146,12 +146,8 @@ def update_user_data():
     return jsonify(status='OK')
 
 
-@core.route('/user/verify')
-def verify_user():
-    try:
-        code = request.args['code']
-    except KeyError:
-        return get_error_json('Missing data', 'missing_data')
+@core.route('/user/verify/<code>')
+def verify_user(code):
     s = Serializer(app.config['SECRET_KEY'], expires_in=0)
     username = s.loads(code)['username']
     user = User.query.filter_by(username=username).first()
@@ -169,5 +165,6 @@ def send_verification_link(username):
     code = s.dumps({'username': username})
     email_id = user.email
     # TODO
-    send_async('me@sidhin.in', 'Testing flask_mail', 'verification.html', name='Sidhin', link='hello.com')
+    send_async(email_id, 'Verify your account with discovermovies',
+               'verification_email.html', name=username, link='localhost:8080/user/verify/'+ str(code).replace("b'","").replace("'",""))
     return jsonify(status='OK')

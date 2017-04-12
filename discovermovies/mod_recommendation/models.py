@@ -17,4 +17,17 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from discovermovies.mod_recommendation.models import Rating
+from discovermovies.core.models import User
+from discovermovies.mod_movie.models import Movie, Genre
+from discovermovies import db
+
+
+class Rating(db.Model):
+    __tablename__ = "rating"
+
+    username = db.Column(db.String(100),db.ForeignKey('User.username'))
+    movie_id = db.Column(db.Integer,db.ForeignKey('movie.id'))
+    rating = db.Column(db.Integer, db.CheckConstraint)
+
+    db.PrimaryKeyConstraint(username, movie_id)
+

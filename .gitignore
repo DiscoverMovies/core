@@ -187,3 +187,4 @@ discovermovies/.DS_Store
 discovermovies/__pycache__/
 discovermovies/core/__pycache__/
 discovermovies/mod_forums/__pycache__/
+/config.py

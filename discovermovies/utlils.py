@@ -19,6 +19,8 @@
 import datetime
 import smtplib
 import threading
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from flask import copy_current_request_context
 from flask import current_app
@@ -29,6 +31,8 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
 from discovermovies import app
+
+mail = Mail(app)
 
 
 def check_token(token):
@@ -51,25 +55,26 @@ def create_massege(to_email, subject, template, from_email=None, **kwargs):
         from_email = current_app.config['ROBOT_EMAIL']
     if not to_email:
         raise ValueError('Target email not defined.')
-    body = 'helo'  # render_template(template, site_name=current_app.config['SITE_NAME'], **kwargs)
-    subject = subject.encode('utf-8')
-    body = body.encode('utf-8')
-    msg = "From: %s\nTo: %s\nSubject: %s\nDate: %s\n\n%s" % (
-        from_email, to_email, subject, datetime.datetime.now(), body)
-    return msg
+    msg = MIMEMultipart('alternative')
+    body = render_template(template, site_name=current_app.config['SITE_NAME'], **kwargs)
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg.attach(MIMEText(body, 'html'))
+    return msg.as_string()
 
 
 def send_async(to_email, subject, template, from_email=None, **kwargs):
-    message = create_massege(to_email, subject, template, from_email, **kwargs)
+    msg = create_massege(to_email, subject, template, from_email, **kwargs)
 
     @copy_current_request_context
     def send_message(message):
-        mailer = smtplib.SMTP()
-        mailer.connect('smtp.zoho.com', port=465)
-        mailer.login('admin@trymake.com', 'Openshift')
-        #TODO
+        mailer = smtplib.SMTP_SSL()
+        mailer.connect('smtp.zoho.com')
+        mailer.login(app.config['EMAIL_USER'], app.config['EMAIL_PASS'])
         print(message)
-        mailer.send('admin@trymake.com', 'sidhin.thomas@gmail.com', message)
+        mailer.sendmail(app.config['ROBOT_EMAIL'], to_email, message)
+        mailer.quit()
 
-    sender = threading.Thread(name='mail_sender', target=send_message, args=(message,))
+    sender = threading.Thread(name='mail_sender', target=send_message, args=(msg,))
     sender.start()
