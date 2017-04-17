@@ -96,4 +96,26 @@ Core handles and interacts with users and sessions. It handles:
     ```
         HTML /movie/genre/all
     ```
+
+### Recommendation
  
+*   Rate a movie
+    ```
+        POST /rate/movie/<movie_id>
+        {token, rating}
+    ```
+
+*   Get all rating provided by a single user
+    ```
+        HTTP /rating/user/all/<token>
+    ```
+
+*   Remove a rating by user
+    ```
+        HTTP /rating/user/remove/<movie_id>/<token>
+    ```
+
+*   Get movies like another movie
+    ```
+        HTTP /recommendation/movie/<movie_id>
+    ```

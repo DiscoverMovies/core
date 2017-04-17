@@ -27,3 +27,4 @@ python-editor
 requests
 setuptools
 wheel
+pandas

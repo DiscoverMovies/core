@@ -17,25 +17,20 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from discovermovies.core.models import User
-from discovermovies.mod_movie.models import Movie, Genre
-from discovermovies import db
 
+class GenerateRecommendation:
 
-class Rating(db.Model):
-    __tablename__ = "rating"
+    def __init__(self):
+        pass
 
-    username = db.Column(db.String(100),db.ForeignKey('User.username'))
-    movie_id = db.Column(db.Integer)
-    rating = db.Column(db.Integer)
+    def fit(self, movie_id_list):
+        pass
 
-    db.PrimaryKeyConstraint(username, movie_id)
+    def get_feature_weight(self):
+        pass
 
-    @property
-    def serialize(self):
-        return {
-            "username": self.username,
-            "rating" : self.rating,
-            "movie_id": self.movie_id,
-        }
+    def set_feature_weight(self):
+        pass
 
+    def predict(self, movieID):
+        pass

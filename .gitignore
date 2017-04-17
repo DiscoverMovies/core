@@ -181,7 +181,6 @@ crashlytics-build.properties
 fabric.properties
 
 .DS_Store
-.gitignore
 .idea/
 discovermovies/.DS_Store
 discovermovies/__pycache__/

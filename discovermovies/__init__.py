@@ -16,15 +16,30 @@
     You should have received a copy of the GNU General Public License
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
+import pickle
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import pandas as pd
 
 app = Flask(__name__)
 app.config.from_object('config')
-#mail_sender.mail.init_app(app)
 
 db = SQLAlchemy(app=app)
+
+
+from dm_recommendation_engine import ContentBasedRecommendationEngine
+
+data = pd.read_csv("movie_data.csv")
+
+movie_recommendation = ContentBasedRecommendationEngine()
+movie_recommendation.train(data)
+
+try:
+    with open("movie_id_data", "rb") as file:
+        movie_id_dictionary = pickle.load(file)
+except FileNotFoundError:
+    movie_id_dictionary = {}
 
 
 @app.errorhandler(404)
@@ -35,9 +50,12 @@ def not_found(status):
 from discovermovies.core import core
 from discovermovies.mod_forums import mod_forums
 from discovermovies.mod_movie import mod_movie
+from discovermovies.mod_recommendation import mod_recommendation
+
 
 app.register_blueprint(core)
 app.register_blueprint(mod_forums)
 app.register_blueprint(mod_movie)
+app.register_blueprint(mod_recommendation)
 
 db.create_all()

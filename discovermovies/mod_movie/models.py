@@ -35,6 +35,14 @@ class Movie(Base):
         id_list = db.session.query(MovieGenre).filter(MovieGenre.mid==self.id).all()
         genre_list = db.session.query(Genre).filter(Genre.id.in_([i.gid for i in id_list])).all()
         collections_list = db.session.query(Collections).filter(Collections.id==self.collection_id).all()
+        production_id =  db.session.query(ProducedBy).filter(ProducedBy.mid==self.id).all()
+        production_companies = db.session.query(ProductionCompanies).filter(
+            ProductionCompanies.id.in_([i.pid for i in production_id])
+        ).all()
+        crew_id_list =  db.session.query(WorkedOn).filter(WorkedOn.mid==self.id).all()
+        crew_list = db.session.query(Crew).filter(
+            Crew.id.in_([i.cid for i in crew_id_list])
+        ).all()
 
         return {
             'id': self.id,
@@ -52,6 +60,8 @@ class Movie(Base):
             'vote_avg': str(self.vote_avg),
             'vote_count': self.vote_count,
             'actor_list': [i.serialize for i in actor_list],
+            "production_companies": [i.serialize for i in production_companies],
+            "crew": [i.serialize for i in crew_list],
             'genre': [i.serialize for i in genre_list]
         }
 
@@ -102,7 +112,7 @@ class Crew(Base):
         return {
             'id': self.id,
             'name': self.name,
-            'deptid': self.deptid
+            'dept': self.dept
         }
 
 
