@@ -17,16 +17,11 @@
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
 import datetime
-import threading
 
 from flask import Blueprint, jsonify
-from flask import copy_current_request_context
-from flask import current_app
-from flask import render_template
 from flask import request
-from flask_mail import Mail, Message
 from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer, BadSignature, SignatureExpired)
+                          as Serializer)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from discovermovies import db, app

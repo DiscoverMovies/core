@@ -16,6 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with discovermovie.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
+
+import errno
+import pickle
+
 from flask import Blueprint, jsonify
 from flask import abort
 from flask import request
@@ -24,6 +29,8 @@ from discovermovies import db, movie_id_dictionary, movie_recommendation
 from discovermovies.mod_movie import Movie
 from discovermovies.mod_recommendation.models import Rating
 from discovermovies.utlils import get_error_json, check_token
+
+RATING_DIRECTORY = "user_rating_data"
 
 mod_recommendation = Blueprint("mod_recommendation", __name__)
 
@@ -86,3 +93,29 @@ def get_recommendation_movie(movie_id):
         id = movie_id_dictionary[i[1]]
         movie_list.append(db.session.query(Movie).filter_by(id=id).first())
     return jsonify(status="OK", movie_list=[i.serialize for i in movie_list])
+
+@mod_recommendation.route("/recommendation/user/<username>")
+def get_user_recommendation(username):
+    try:
+        os.makedirs("%s" % RATING_DIRECTORY)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+    try:
+        with open(RATING_DIRECTORY + "/" +username,"rb") as file:
+            user_rating = pickle.load(file)
+    except FileNotFoundError:
+        return get_error_json("No recommendations has been generated yet", "no_recommendation")
+    movie_list = []
+    for key in user_rating.keys():
+        movie_list.append(db.session.query(Movie).filter_by(id=key).first())
+    print(movie_list)
+    movie_list = movie_list[-11:-1]
+    return jsonify(status="OK",recommendations=[
+        {"id":i.id,
+         "title":i.title,
+         "poster_url":i.poster_url,
+         "overview":i.overview,
+         "release_date": i.release_date
+         } for i in movie_list])
+

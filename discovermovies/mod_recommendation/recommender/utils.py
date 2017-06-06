@@ -19,6 +19,8 @@
 import csv
 import pickle
 
+from collections import defaultdict
+
 from discovermovies import db
 from discovermovies.mod_movie import Movie
 
@@ -49,3 +51,24 @@ def generate_csv_movie_data():
             id_correspondance[idx] = i.id
     with open("movie_id_data", "wb") as movie_id_data:
         pickle.dump(id_correspondance, movie_id_data, pickle.HIGHEST_PROTOCOL)
+
+def partition(data, min_num):
+    """
+    This methods divides the entire list to a subset where the content have apears greater than a specified value.
+
+
+    data contains the list of IDs
+    min_num is the threshold used to partition it into sets.
+
+    :param data: list
+    :param min_num: integer
+    :return: list
+    """
+    count = defaultdict(int)
+    for i in data:
+        count[i] += 1
+    final_set = []
+    for i in count.keys():
+        if count[i] > min_num:
+            final_set.append(i)
+    return final_set

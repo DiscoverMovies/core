@@ -30,10 +30,13 @@ db = SQLAlchemy(app=app)
 
 from dm_recommendation_engine import ContentBasedRecommendationEngine
 
-data = pd.read_csv("movie_data.csv")
-
 movie_recommendation = ContentBasedRecommendationEngine()
-movie_recommendation.train(data)
+try:
+    data = pd.read_csv("movie_data.csv")
+    movie_recommendation.train(data)
+except IOError:
+    data = None
+
 
 try:
     with open("movie_id_data", "rb") as file:
