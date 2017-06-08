@@ -23,7 +23,7 @@ from collections import defaultdict
 
 from discovermovies import db
 from discovermovies.mod_movie import Movie
-
+import re
 
 def parse_movie_id_list(movie_id_list):
     pass
@@ -37,16 +37,21 @@ def generate_csv_movie_data():
         writer.writerow(['id','description'])
         for idx,i in enumerate(movies):
             data = i.serialize
+            collections = str([k['name'] for k in data['collections']]);
+            actor_list = [k['name'] for k in data['actor_list']]
+            p_companies = [k['name'] for k in data['production_companies']]
+            crew = [k['name'] for k in data['crew']]
+            genre = [k['name'] for k in data['genre']]
             writer.writerow([idx,
-                             str(data['collections']) + " " +
-                             str(data['title']) + " " +
-                             str(data['overview']) + " " +
-                             str(data['release_date']) + " " +
-                             str(data['tagline']) + " " +
-                             str(data['actor_list']) + " " +
-                             str(data['production_companies']) + " " +
-                             str(data['crew']) + " " +
-                             str(data['genre'])
+                             re.sub("[{}()\"'\[\]]"," ",collections) + " " +
+                             re.sub("[{}()\"']", " ",str(data['title'])) + " " +
+                             re.sub("[{}()\"']", " ",str(data['overview'])) + " " +
+                             re.sub("[{}()\"']", " ",str(data['release_date'])) + " "  +
+                             re.sub("[{}()\"']", " ",str(data['tagline'])) + " " +
+                             re.sub("[{}()\"']", " ",str(actor_list)) + " " +
+                             re.sub("[{}()\"']", " ",str(p_companies)) + " " +
+                             re.sub("[{}()\"']", " ",str(crew)) + " " +
+                             re.sub("[{}()\"']", " ",str(genre))
                              ])
             id_correspondance[idx] = i.id
     with open("movie_id_data", "wb") as movie_id_data:

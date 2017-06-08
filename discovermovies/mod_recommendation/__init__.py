@@ -89,6 +89,7 @@ def get_recommendation_movie(movie_id):
         num = int(request.args["count"])
     recommendation_list = movie_recommendation.predict(index,num)
     movie_list = []
+    print(recommendation_list)
     for i in recommendation_list:
         id = movie_id_dictionary[i[1]]
         movie_list.append(db.session.query(Movie).filter_by(id=id).first())
@@ -109,7 +110,6 @@ def get_user_recommendation(username):
     movie_list = []
     for key in user_rating.keys():
         movie_list.append(db.session.query(Movie).filter_by(id=key).first())
-    print(movie_list)
     movie_list = movie_list[-11:-1]
     return jsonify(status="OK",recommendations=[
         {"id":i.id,
